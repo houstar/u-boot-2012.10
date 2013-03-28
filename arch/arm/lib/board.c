@@ -298,7 +298,7 @@ void board_init_f(ulong bootflag)
 
 	for (init_fnc_ptr = init_sequence; *init_fnc_ptr; ++init_fnc_ptr) {
 		if ((*init_fnc_ptr)() != 0) {
-			hang ();
+			//hang ();
 		}
 	}
 
@@ -538,7 +538,7 @@ void board_init_r(gd_t *id, ulong dest_addr)
 # endif /* CONFIG_SYS_FLASH_CHECKSUM */
 	} else {
 		puts(failed);
-		hang();
+		//hang();
 	}
 #endif
 

@@ -40,10 +40,16 @@
 
 #include <common.h>
 #include <asm/proc-armv/ptrace.h>
-#include <asm/arch/s3c6400.h>
+#include <asm/arch/s3c6410.h>
 #include <div64.h>
 
-static ulong timer_load_val;
+//static ulong timer_load_val;
+DECLARE_GLOBAL_DATA_PTR;
+/* modified bugs:raise:Signal 8# caught*/
+#define timer_load_val (gd->timer_rate_hz)
+#define timer_clk     (gd->tbl)
+#define timestamp      (gd->timer_reset_value)
+#define lastdec        (gd->lastinc)
 
 #define PRESCALER	167
 
@@ -62,9 +68,9 @@ static inline ulong read_timer(void)
 
 /* Internal tick units */
 /* Last decremneter snapshot */
-static unsigned long lastdec;
+//static unsigned long lastdec;
 /* Monotonic incrementing timer */
-static unsigned long long timestamp;
+//static unsigned long long timestamp;
 
 int timer_init(void)
 {

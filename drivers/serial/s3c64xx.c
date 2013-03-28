@@ -23,7 +23,7 @@
 
 #include <common.h>
 
-#include <asm/arch/s3c6400.h>
+#include <asm/arch/s3c6410.h>
 
 DECLARE_GLOBAL_DATA_PTR;
 

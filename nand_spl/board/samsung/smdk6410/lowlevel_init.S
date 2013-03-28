@@ -1,0 +1,1 @@
+/home/houstar/GitRepo/u-boot/board/samsung/smdk6410/lowlevel_init.S

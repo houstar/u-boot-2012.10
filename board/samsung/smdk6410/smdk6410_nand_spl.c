@@ -1,8 +1,13 @@
 /*
- * URB OHCI HCD (Host Controller Driver) initialization for USB on the S3C64XX.
+ * (C) Copyright 2002
+ * Sysgo Real-Time Solutions, GmbH <www.elinos.com>
+ * Marius Groeger <mgroeger@sysgo.de>
  *
- * Copyright (C) 2008,
- * Guennadi Liakhovetski, DENX Software Engineering <lg@denx.de>
+ * (C) Copyright 2002
+ * David Mueller, ELSOFT AG, <d.mueller@elsoft.ch>
+ *
+ * (C) Copyright 2008
+ * Guennadi Liakhovetki, DENX Software Engineering, <lg@denx.de>
  *
  * See file CREDITS for list of people who contributed to this
  * project.
@@ -21,25 +26,12 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston,
  * MA 02111-1307 USA
- *
  */
 
 #include <common.h>
-#include <asm/arch/s3c6410.h>
 
-int usb_cpu_init(void)
+void board_init_f(unsigned long bootflag)
 {
-	OTHERS_REG |= 0x10000;
-	return 0;
-}
-
-int usb_cpu_stop(void)
-{
-	OTHERS_REG &= ~0x10000;
-	return 0;
-}
-
-void usb_cpu_init_fail(void)
-{
-	OTHERS_REG &= ~0x10000;
+	relocate_code(CONFIG_SYS_TEXT_BASE - TOTAL_MALLOC_LEN, NULL,
+			CONFIG_SYS_TEXT_BASE);
 }
