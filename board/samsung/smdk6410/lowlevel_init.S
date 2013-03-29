@@ -51,16 +51,31 @@ _TEXT_BASE:
 lowlevel_init:
 	mov	r12, lr
 
-	/* LED on only #8 */
-	ldr	r0, =ELFIN_GPIO_BASE
-	ldr	r1, =0x55540000
-	str	r1, [r0, #GPNCON_OFFSET]
+          ldr   r0, =ELFIN_GPIO_BASE
+          ldr   r1, =0x55555555
+          str   r1, [r0, #GPKCON0_OFFSET]
+          
+          ldr   r1, =0x55555555
+          str   r1, [r0, #GPKCON1_OFFSET]
 
-	ldr	r1, =0x55555555
-	str	r1, [r0, #GPNPUD_OFFSET]
+          ldr   r1, =0x22222666
+          str   r1, [r0, #GPLCON0_OFFSET]
 
-	ldr	r1, =0xf000
-	str	r1, [r0, #GPNDAT_OFFSET]
+          ldr   r1, =0x04000000
+          str   r1, [r0, #GPFCON_OFFSET]
+          ldr   r1, =0x2000
+          str   r1, [r0, #GPFDAT_OFFSET]
+        
+        /* LED on only #8 */
+	  ldr	r0, =ELFIN_GPIO_BASE
+	  ldr	r1, =0x00111111
+	  str	r1, [r0, #GPMCON_OFFSET]
+
+	  ldr	r1, =0x00000555
+	  str	r1, [r0, #GPMPUD_OFFSET]
+
+	  ldr	r1, =0x0027
+	  str	r1, [r0, #GPMDAT_OFFSET]
 
 	/* Disable Watchdog */
 	ldr	r0, =0x7e000000		@0x7e004000
@@ -132,9 +147,9 @@ wakeup_reset:
 	str	r1, [r0]
 
 	/* LED test */
-	ldr	r0, =ELFIN_GPIO_BASE
-	ldr	r1, =0x3000
-	str	r1, [r0, #GPNDAT_OFFSET]
+	//ldr	r0, =ELFIN_GPIO_BASE
+	//ldr	r1, =0x0025
+	//str	r1, [r0, #GPMDAT_OFFSET]
 
 	/* Load return address and jump to kernel */
 	ldr	r0, =(ELFIN_CLOCK_POWER_BASE + INF_REG0_OFFSET)
@@ -184,7 +199,7 @@ check_syncack:
 	 * This was unconditional in original Samsung sources, but it doesn't
 	 * seem to make much sense on S3C6400.
 	 */
-#ifndef CONFIG_S3C6400
+//#ifndef CONFIG_S3C6410
 	ldr	r1, [r0, #OTHERS_OFFSET]
 	bic	r1, r1, #0xC0
 	orr	r1, r1, #0x40
@@ -195,7 +210,7 @@ wait_for_async:
 	and	r1, r1, #0xf00
 	cmp	r1, #0x0
 	bne	wait_for_async
-#endif
+//#endif
 
 	ldr	r1, [r0, #OTHERS_OFFSET]
 	bic	r1, r1, #0x40
@@ -222,7 +237,7 @@ wait_for_async:
 	str	r1, [r0, #MPLL_CON_OFFSET]
 
 	/* FOUT of EPLL is 96MHz */
-	ldr	r1, =0x200203
+	ldr	r1, =0x80200203//zxd 0x200203
 	str	r1, [r0, #EPLL_CON0_OFFSET]
 	ldr	r1, =0x0
 	str	r1, [r0, #EPLL_CON1_OFFSET]
@@ -242,7 +257,7 @@ wait_for_async:
 	ldr	r1, [r0, #OTHERS_OFFSET]
 	orr	r1, r1, #0x20
 	str	r1, [r0, #OTHERS_OFFSET]
-#elif !defined(CONFIG_S3C6400)
+#elif !defined(CONFIG_S3C6410)
 	/* According to 661558um_S3C6400X_rev10.pdf 0x20 is reserved */
 	ldr	r1, [r0, #OTHERS_OFFSET]
 	bic	r1, r1, #0x20
@@ -311,13 +326,13 @@ mmu_table:
 
 	/* 128MB for SDRAM 0xC0000000 -> 0x50000000 */
 	.set __base, 0x500
-	.rept 0xC80 - 0xC00
+	.rept 0xD00 - 0xC00
 	FL_SECTION_ENTRY __base, 3, 0, 1, 1
 	.set __base, __base + 1
 	.endr
 
 	/* access is not allowed. */
-	.rept 0x1000 - 0xc80
+	.rept 0x1000 - 0xD00
 	.word 0x00000000
 	.endr
 #endif

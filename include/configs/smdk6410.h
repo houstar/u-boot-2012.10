@@ -65,7 +65,7 @@
 /*
  * Architecture magic and machine type
  */
-#define CONFIG_MACH_TYPE		1270
+#define CONFIG_MACH_TYPE		1626
 
 #define CONFIG_DISPLAY_CPUINFO
 #define CONFIG_DISPLAY_BOARDINFO
@@ -78,10 +78,24 @@
 /*
  * Hardware drivers
  */
-#define CONFIG_CS8900			/* we have a CS8900 on-board	*/
-#define CONFIG_CS8900_BASE	  	0x18800300
-#define CONFIG_CS8900_BUS16		/* follow the Linux driver	*/
+//#define CONFIG_CS8900			/* we have a CS8900 on-board	*/
+//#define CONFIG_CS8900_BASE	  	0x18800300
+//#define CONFIG_CS8900_BUS16		/* follow the Linux driver	*/
+/*
+ * DM9000 Drivers
+ */
+ #define CONFIG_DRIVER_DM9000 1
+#define CONFIG_DM9000_BASE (0x18000300) /*XM0CSN1*/
+#define DM9000_IO (CONFIG_DM9000_BASE)
+#define DM9000_DATA (CONFIG_DM9000_BASE+0x4) /*ADDR2*/
+#define CONFIG_DM9000_DEBUG 1
+#define CONFIG_DM9000_USE_16BIT 1
 
+#define CONFIG_ETHADDR			08:08:10:12:10:27
+#define CONFIG_NETMASK			255.255.255.0
+#define CONFIG_IPADDR			192.168.1.232 
+#define CONFIG_SERVERIP			192.168.1.101
+#define CONFIG_GATEWAYIP		192.168.1.1
 /*
  * select serial console configuration
  */
@@ -163,7 +177,7 @@
 /* SMDK6400 has 2 banks of DRAM, but we use only one in U-Boot */
 #define CONFIG_NR_DRAM_BANKS	1 
 #define PHYS_SDRAM_1		CONFIG_SYS_SDRAM_BASE	/* SDRAM Bank #1	*/
-#define PHYS_SDRAM_1_SIZE	0x08000000	/* 128 MB in Bank #1	*/
+#define PHYS_SDRAM_1_SIZE	0x10000000	/* 128 MB in Bank #1	*/
 
 #define CONFIG_SYS_FLASH_BASE		0x10000000
 #define CONFIG_SYS_MONITOR_BASE	0x00000000
@@ -235,11 +249,11 @@
 #define CONFIG_SYS_NAND_U_BOOT_SIZE	(252 * 1024)	/* Size of RAM U-Boot image   */
 
 /* NAND chip page size		*/
-#define CONFIG_SYS_NAND_PAGE_SIZE	2048
+#define CONFIG_SYS_NAND_PAGE_SIZE	(2048 * 2)
 /* NAND chip block size		*/
-#define CONFIG_SYS_NAND_BLOCK_SIZE	(128 * 1024)
+#define CONFIG_SYS_NAND_BLOCK_SIZE	(128 * 4 * 1024)
 /* NAND chip page per block count  */
-#define CONFIG_SYS_NAND_PAGE_COUNT	64
+#define CONFIG_SYS_NAND_PAGE_COUNT	(64 * 2)
 /* Location of the bad-block label */
 #define CONFIG_SYS_NAND_BAD_BLOCK_POS	0
 /* Extra address cycle for > 128MiB */

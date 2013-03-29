@@ -46,8 +46,8 @@ DECLARE_GLOBAL_DATA_PTR;
 static inline void delay(unsigned long loops)
 {
 	__asm__ volatile ("1:\n" "subs %0, %1, #1\n"
-			  "bne 1b"
-			  : "=r" (loops) : "0" (loops));
+			"bne 1b"
+			: "=r" (loops) : "0" (loops));
 }
 
 /*
@@ -86,7 +86,7 @@ void dram_init_banksize(void)
 int dram_init(void)
 {
 	gd->ram_size = get_ram_size((long *)CONFIG_SYS_SDRAM_BASE,
-				PHYS_SDRAM_1_SIZE);
+			PHYS_SDRAM_1_SIZE);
 
 	return 0;
 }
@@ -94,7 +94,7 @@ int dram_init(void)
 #ifdef CONFIG_DISPLAY_BOARDINFO
 int checkboard(void)
 {
-	printf("Board:   SMDK6400\n");
+	printf("Board:   SMDK6410\n");
 	return 0;
 }
 #endif
@@ -128,6 +128,9 @@ int board_eth_init(bd_t *bis)
 	int rc = 0;
 #ifdef CONFIG_CS8900
 	rc = cs8900_initialize(0, CONFIG_CS8900_BASE);
+#endif
+#if defined(CONFIG_DRIVER_DM9000)
+	rc = dm9000_initialize(bis);
 #endif
 	return rc;
 }
