@@ -36,6 +36,15 @@
  * High Level Configuration Options
  * (easy to change)
  */
+
+/*
+ * MMC Support
+ */
+#define CONFIG_GENERIC_MMC	 1
+#define CONFIG_MMC	 1
+#define CONFIG_S3C64X0_MMC	 1
+#define CONFIG_CMD_MMC	 /* MMC support	 */
+
 #define CONFIG_S3C6410		1	/* in a SAMSUNG S3C6400 SoC     */
 #define CONFIG_S3C64XX		1	/* in a SAMSUNG S3C64XX Family  */
 #define CONFIG_SMDK6410		1	/* on a SAMSUNG SMDK6400 Board  */
@@ -84,7 +93,7 @@
 /*
  * DM9000 Drivers
  */
- #define CONFIG_DRIVER_DM9000 1
+#define CONFIG_DRIVER_DM9000 1
 #define CONFIG_DM9000_BASE (0x18000300) /*XM0CSN1*/
 #define DM9000_IO (CONFIG_DM9000_BASE)
 #define DM9000_DATA (CONFIG_DM9000_BASE+0x4) /*ADDR2*/
@@ -156,7 +165,7 @@
 #define CONFIG_SYS_HZ			1000
 
 /**********************************
- Support Clock Settings
+  Support Clock Settings
  **********************************
  Setting	SYNC	ASYNC
  ----------------------------------
@@ -220,11 +229,11 @@
 #ifdef CONFIG_ENABLE_MMU
 #define CONFIG_SYS_MAPPED_RAM_BASE	0xc0000000
 #define CONFIG_BOOTCOMMAND	"nand read 0xc0018000 0x60000 0x1c0000;" \
-				"bootm 0xc0018000"
+	"bootm 0xc0018000"
 #else
 #define CONFIG_SYS_MAPPED_RAM_BASE	CONFIG_SYS_SDRAM_BASE
 #define CONFIG_BOOTCOMMAND	"nand read 0x50018000 0x60000 0x1c0000;" \
-				"bootm 0x50018000"
+	"bootm 0x50018000"
 #endif
 
 /* NAND U-Boot load and start address */
@@ -273,8 +282,8 @@
 #define CONFIG_SYS_NAND_OOBSIZE	64
 /* ECC byte positions */
 #define CONFIG_SYS_NAND_ECCPOS		{40, 41, 42, 43, 44, 45, 46, 47, \
-				 48, 49, 50, 51, 52, 53, 54, 55, \
-				 56, 57, 58, 59, 60, 61, 62, 63}
+	48, 49, 50, 51, 52, 53, 54, 55, \
+	56, 57, 58, 59, 60, 61, 62, 63}
 
 /* Boot configuration (define only one of next 3) */
 #define CONFIG_BOOT_NAND
@@ -306,6 +315,7 @@
 #define CONFIG_SYS_USB_OHCI_CPU_INIT		1
 
 #define CONFIG_USB_STORAGE	1
+#define CONFIG_S3C_USBD
 #endif
 #define CONFIG_DOS_PARTITION	1
 

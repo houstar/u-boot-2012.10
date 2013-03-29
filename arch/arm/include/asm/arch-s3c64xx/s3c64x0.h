@@ -86,5 +86,4 @@ typedef struct {
 	volatile u32	TCNTB4;
 	volatile u32	TCNTO4;
 } s3c64xx_timers;
-
 #endif /*__S3C64XX_H__*/
