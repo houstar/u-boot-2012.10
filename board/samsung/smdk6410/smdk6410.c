@@ -136,4 +136,11 @@ int board_eth_init(bd_t *bis)
 }
 #endif
 
+#ifdef CONFIG_GERNERIC_MMC
+int board_mmc_init(bd_t *bis)
+{
+	return s3c64x0_mmc_init(0);
+}
+#endif
+
 

@@ -86,4 +86,40 @@ typedef struct {
 	volatile u32	TCNTB4;
 	volatile u32	TCNTO4;
 } s3c64xx_timers;
+struct s3c64x0_mmc {
+	unsigned int	sysad;
+	unsigned short	blksize;
+	unsigned short	blkcnt;
+	unsigned int	argument;
+	unsigned short	trnmod;
+	unsigned short	cmdreg;
+	unsigned int	rspreg0;
+	unsigned int	rspreg1;
+	unsigned int	rspreg2;
+	unsigned int	rspreg3;
+	unsigned int	bdata;
+	unsigned int	prnsts;
+	unsigned char	hostctl;
+	unsigned char	pwrcon;
+	unsigned char	blkgap;
+	unsigned char	wakcon;
+	unsigned short	clkcon;
+	unsigned char	timeoutcon;
+	unsigned char	swrst;
+	unsigned int	norintsts;	/* errintsts */
+	unsigned int	norintstsen;	/* errintstsen */
+	unsigned int	norintsigen;	/* errintsigen */
+	unsigned short	acmd12errsts;
+	unsigned char	res1[2];
+	unsigned int	capareg;
+	unsigned char	res2[4];
+	unsigned int	maxcurr;
+	unsigned char	res3[0x34];
+	unsigned int	control2;
+	unsigned int	control3;
+	unsigned int	control4;
+	unsigned char	res4[0x6e];
+	unsigned short	hcver;
+	unsigned char	res5[0xFFF02];
+};
 #endif /*__S3C64XX_H__*/

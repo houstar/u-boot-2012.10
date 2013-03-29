@@ -41,7 +41,7 @@
  * MMC Support
  */
 #define CONFIG_GENERIC_MMC	 1
-#define CONFIG_MMC	 1
+#define CONFIG_MMC			 1
 #define CONFIG_S3C64X0_MMC	 1
 #define CONFIG_CMD_MMC	 /* MMC support	 */
 
