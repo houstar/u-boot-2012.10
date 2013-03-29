@@ -260,9 +260,15 @@
 #define CONFIG_SYS_NAND_5_ADDR_CYCLE
 
 /* Size of the block protected by one OOB (Spare Area in Samsung terminology) */
-#define CONFIG_SYS_NAND_ECCSIZE	CONFIG_SYS_NAND_PAGE_SIZE
+#define CONFIG_SYS_NAND_ECCSIZE	512//CONFIG_SYS_NAND_PAGE_SIZE
 /* Number of ECC bytes per OOB - S3C6400 calculates 4 bytes ECC in 1-bit mode */
+#define CONFIG_NAND_BL1_8BIT_ECC
+
+#ifdef CONFIG_NAND_BL1_8BIT_ECC
+#define CONFIG_SYS_NAND_ECCBYTES	13
+#else
 #define CONFIG_SYS_NAND_ECCBYTES	4
+#endif
 /* Size of a single OOB region */
 #define CONFIG_SYS_NAND_OOBSIZE	64
 /* ECC byte positions */

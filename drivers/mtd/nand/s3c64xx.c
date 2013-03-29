@@ -122,6 +122,218 @@ static int s3c_nand_device_ready(struct mtd_info *mtdinfo)
  * This function is called before encoding ecc codes to ready ecc engine.
  * Written by jsgood
  */
+ 
+#if defined(CONFIG_NAND_BL1_8BIT_ECC) && (defined(CONFIG_S3C6410) || defined(CONFIG_S3C6430))
+ /***************************************************************
+  * jsgood: Temporary 8 Bit H/W ECC supports for BL1 (6410/6430 only)
+  ***************************************************************/
+ int cur_ecc_mode=0;
+	/*
+	 * Function for checking ECCEncDone in NFSTAT
+	 * Written by jsgood
+	 */
+	static void s3c_nand_wait_enc(void)
+	{
+		while (!(readl(NFSTAT) & NFSTAT_ECCENCDONE)) {}
+	}
+	
+	/*
+	 * Function for checking ECCDecDone in NFSTAT
+	 * Written by jsgood
+	 */
+	static void s3c_nand_wait_dec(void)
+	{
+		while (!(readl(NFSTAT) & NFSTAT_ECCDECDONE)) {}
+	}
+  
+ static void s3c_nand_wait_ecc_busy_8bit(void)
+ {
+	 while (readl(NF8ECCERR0) & NFESTAT0_ECCBUSY) {}
+ }
+ void s3c_nand_enable_hwecc_8bit(struct mtd_info *mtd, int mode)
+{
+    u_long nfcont, nfconf;
+
+    cur_ecc_mode = mode;
+
+    /* 8 bit selection */
+    nfconf = readl(NFCONF);
+
+    nfconf &= ~(0x3 << 23);
+    nfconf |= (0x1 << 23);
+
+    writel(nfconf, NFCONF);
+
+    /* Initialize & unlock */
+    nfcont = readl(NFCONT);
+    nfcont |= NFCONT_INITECC;
+    nfcont &= ~NFCONT_MECCLOCK;
+
+    if (mode == NAND_ECC_WRITE)
+        nfcont |= NFCONT_ECC_ENC;
+    else if (mode == NAND_ECC_READ)
+        nfcont &= ~NFCONT_ECC_ENC;
+
+    writel(nfcont, NFCONT);
+}
+int s3c_nand_calculate_ecc_8bit(struct mtd_info *mtd, const u_char *dat, u_char *ecc_code)
+{
+    u_long nfcont, nfm8ecc0, nfm8ecc1, nfm8ecc2, nfm8ecc3;
+
+    /* Lock */
+    nfcont = readl(NFCONT);
+    nfcont |= NFCONT_MECCLOCK;
+    writel(nfcont, NFCONT);
+
+    if (cur_ecc_mode == NAND_ECC_READ)
+        s3c_nand_wait_dec();
+    else {
+        s3c_nand_wait_enc();
+
+        nfm8ecc0 = readl(NFM8ECC0);
+        nfm8ecc1 = readl(NFM8ECC1);
+        nfm8ecc2 = readl(NFM8ECC2);
+        nfm8ecc3 = readl(NFM8ECC3);
+
+        ecc_code[0] = nfm8ecc0 & 0xff;
+        ecc_code[1] = (nfm8ecc0 >> 8) & 0xff;
+        ecc_code[2] = (nfm8ecc0 >> 16) & 0xff;
+        ecc_code[3] = (nfm8ecc0 >> 24) & 0xff;
+        ecc_code[4] = nfm8ecc1 & 0xff;
+        ecc_code[5] = (nfm8ecc1 >> 8) & 0xff;
+        ecc_code[6] = (nfm8ecc1 >> 16) & 0xff;
+        ecc_code[7] = (nfm8ecc1 >> 24) & 0xff;
+        ecc_code[8] = nfm8ecc2 & 0xff;
+        ecc_code[9] = (nfm8ecc2 >> 8) & 0xff;
+        ecc_code[10] = (nfm8ecc2 >> 16) & 0xff;
+        ecc_code[11] = (nfm8ecc2 >> 24) & 0xff;
+        ecc_code[12] = nfm8ecc3 & 0xff;
+    }
+
+    return 0;
+}
+
+int s3c_nand_correct_data_8bit(struct mtd_info *mtd, u_char *dat, u_char *read_ecc, u_char *calc_ecc)
+{
+    int ret = -1;
+    u_long nf8eccerr0, nf8eccerr1, nf8eccerr2, nfmlc8bitpt0, nfmlc8bitpt1;
+    u_char err_type;
+
+    s3c_nand_wait_ecc_busy_8bit();
+
+    nf8eccerr0 = readl(NF8ECCERR0);
+    nf8eccerr1 = readl(NF8ECCERR1);
+    nf8eccerr2 = readl(NF8ECCERR2);
+    nfmlc8bitpt0 = readl(NFMLC8BITPT0);
+    nfmlc8bitpt1 = readl(NFMLC8BITPT1);
+
+    err_type = (nf8eccerr0 >> 25) & 0xf;
+
+    /* No error, If free page (all 0xff) */
+    if ((nf8eccerr0 >> 29) & 0x1)
+        err_type = 0;
+
+    switch (err_type)
+    {
+    case 8: /* 8 bit error (Correctable) */
+        dat[(nf8eccerr2 >> 22) & 0x3ff] ^= ((nfmlc8bitpt1 >> 24) & 0xff);
+        printk("s3c-nand: %d bit(s) error detected, corrected successfully\n", err_type);
+
+    case 7: /* 7 bit error (Correctable) */
+        dat[(nf8eccerr2 >> 11) & 0x3ff] ^= ((nfmlc8bitpt1 >> 16) & 0xff);
+        printk("s3c-nand: %d bit(s) error detected, corrected successfully\n", err_type);
+
+    case 6: /* 6 bit error (Correctable) */
+        dat[nf8eccerr2 & 0x3ff] ^= ((nfmlc8bitpt1 >> 8) & 0xff);
+        printk("s3c-nand: %d bit(s) error detected, corrected successfully\n", err_type);
+
+    case 5: /* 5 bit error (Correctable) */
+        dat[(nf8eccerr1 >> 22) & 0x3ff] ^= (nfmlc8bitpt1 & 0xff);
+        printk("s3c-nand: %d bit(s) error detected, corrected successfully\n", err_type);
+
+    case 4: /* 4 bit error (Correctable) */
+        dat[(nf8eccerr1 >> 11) & 0x3ff] ^= ((nfmlc8bitpt0 >> 24) & 0xff);
+        printk("s3c-nand: %d bit(s) error detected, corrected successfully\n", err_type);
+
+    case 3: /* 3 bit error (Correctable) */
+        dat[nf8eccerr1 & 0x3ff] ^= ((nfmlc8bitpt0 >> 16) & 0xff);
+        printk("s3c-nand: %d bit(s) error detected, corrected successfully\n", err_type);
+
+    case 2: /* 2 bit error (Correctable) */
+        dat[(nf8eccerr0 >> 15) & 0x3ff] ^= ((nfmlc8bitpt0 >> 8) & 0xff);
+        printk("s3c-nand: %d bit(s) error detected, corrected successfully\n", err_type);
+
+
+    case 1: /* 1 bit error (Correctable) */
+        printk("s3c-nand: %d bit(s) error detected, corrected successfully\n", err_type);
+        dat[nf8eccerr0 & 0x3ff] ^= (nfmlc8bitpt0 & 0xff);
+        ret = err_type;
+        break;
+
+    case 0: /* No error */
+        ret = 0;
+        break;
+
+    }
+
+    return ret;
+}
+
+void s3c_nand_write_page_8bit(struct mtd_info *mtd, struct nand_chip *chip,
+                              const uint8_t *buf)
+{
+    int i, eccsize = 512;
+    int eccbytes = 13;
+    int eccsteps = mtd->writesize / eccsize;
+    uint8_t *ecc_calc = chip->buffers->ecccalc;
+    uint8_t *p = buf;
+
+    for (i = 0; eccsteps; eccsteps--, i += eccbytes, p += eccsize) {
+        s3c_nand_enable_hwecc_8bit(mtd, NAND_ECC_WRITE);
+        chip->write_buf(mtd, p, eccsize);
+        s3c_nand_calculate_ecc_8bit(mtd, p, &ecc_calc[i]);
+    }
+
+    for (i = 0; i < eccbytes * (mtd->writesize / eccsize); i++)
+        chip->oob_poi[i+24] = ecc_calc[i];
+    chip->write_buf(mtd, chip->oob_poi, mtd->oobsize);
+}
+
+int s3c_nand_read_page_8bit(struct mtd_info *mtd, struct nand_chip *chip,
+                            uint8_t *buf)
+{
+    int i, stat, eccsize = 512;
+    int eccbytes = 13;
+    int eccsteps = mtd->writesize / eccsize;
+    int col = 0;
+    uint8_t *p = buf;
+
+    /* Step1: read whole oob */
+    col = mtd->writesize;
+    chip->cmdfunc(mtd, NAND_CMD_RNDOUT, col, -1);
+    chip->read_buf(mtd, chip->oob_poi, mtd->oobsize);
+
+    col = 0;
+    for (i = 0; eccsteps; eccsteps--, i += eccbytes, p += eccsize) {
+        chip->cmdfunc(mtd, NAND_CMD_RNDOUT, col, -1);
+        s3c_nand_enable_hwecc_8bit(mtd, NAND_ECC_READ);
+        chip->read_buf(mtd, p, eccsize);
+        chip->write_buf(mtd, chip->oob_poi + 24 + (((mtd->writesize / eccsize) - eccsteps) * eccbytes), eccbytes);
+        s3c_nand_calculate_ecc_8bit(mtd, 0, 0);
+        stat = s3c_nand_correct_data_8bit(mtd, p, 0, 0);
+
+        if (stat == -1)
+            mtd->ecc_stats.failed++;
+
+        col = eccsize * ((mtd->writesize / eccsize) + 1 - eccsteps);
+    }
+
+    return 0;
+}
+
+/********************************************************/
+#endif
+
 static void s3c_nand_enable_hwecc(struct mtd_info *mtd, int mode)
 {
 	u_long nfcont, nfconf;
@@ -131,8 +343,9 @@ static void s3c_nand_enable_hwecc(struct mtd_info *mtd, int mode)
 	 * those with non-zero ID[3][3:2], which anyway only holds for ST
 	 * (Numonyx) chips
 	 */
-	nfconf = readl(NFCONF) & ~NFCONF_ECC_4BIT;
 
+	nfconf = readl(NFCONF) & ~NFCONF_ECC_4BIT;
+    
 	writel(nfconf, NFCONF);
 
 	/* Initialize & unlock */
@@ -157,7 +370,6 @@ static int s3c_nand_calculate_ecc(struct mtd_info *mtd, const u_char *dat,
 				  u_char *ecc_code)
 {
 	u_long nfcont, nfmecc0;
-
 	/* Lock */
 	nfcont = readl(NFCONT);
 	nfcont |= NFCONT_MECCLOCK;
@@ -169,7 +381,7 @@ static int s3c_nand_calculate_ecc(struct mtd_info *mtd, const u_char *dat,
 	ecc_code[1] = (nfmecc0 >> 8) & 0xff;
 	ecc_code[2] = (nfmecc0 >> 16) & 0xff;
 	ecc_code[3] = (nfmecc0 >> 24) & 0xff;
-
+    
 	return 0;
 }
 
@@ -274,10 +486,19 @@ int board_nand_init(struct nand_chip *nand)
 #endif
 
 #ifdef CONFIG_SYS_S3C_NAND_HWECC
+    #ifdef CONFIG_NAND_BL1_8BIT_ECC
+	printf("USE HWECC 8BIT\n");//zxd
+	nand->ecc.hwctl		= s3c_nand_enable_hwecc_8bit;
+	nand->ecc.calculate	= s3c_nand_calculate_ecc_8bit;
+	nand->ecc.correct	= s3c_nand_correct_data_8bit;
+	nand->ecc.read_page = s3c_nand_read_page_8bit;
+    nand->ecc.write_page = s3c_nand_write_page_8bit;
+    #else
+	printf("USE HWECC Default\n");//zxd
 	nand->ecc.hwctl		= s3c_nand_enable_hwecc;
 	nand->ecc.calculate	= s3c_nand_calculate_ecc;
 	nand->ecc.correct	= s3c_nand_correct_data;
-
+    #endif
 	/*
 	 * If you get more than 1 NAND-chip with different page-sizes on the
 	 * board one day, it will get more complicated...
@@ -285,6 +506,7 @@ int board_nand_init(struct nand_chip *nand)
 	nand->ecc.mode		= NAND_ECC_HW;
 	nand->ecc.size		= CONFIG_SYS_NAND_ECCSIZE;
 	nand->ecc.bytes		= CONFIG_SYS_NAND_ECCBYTES;
+    printf("ECC Size:%d ECC Bytes:%d\n",nand->ecc.size,nand->ecc.bytes);//zxd	
 #else
 	nand->ecc.mode		= NAND_ECC_SOFT;
 #endif /* ! CONFIG_SYS_S3C_NAND_HWECC */
