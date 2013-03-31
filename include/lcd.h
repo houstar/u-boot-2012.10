@@ -29,6 +29,8 @@
 #ifndef _LCD_H_
 #define _LCD_H_
 
+#include <s3cfb_LCD.h>//zxd
+
 extern char lcd_is_enabled;
 
 extern int lcd_line_length;
@@ -262,6 +264,17 @@ typedef struct vidinfo {
 } vidinfo_t;
 
 void init_panel_info(vidinfo_t *vid);
+//zxd -->
+#elif CONFIG_S3C6410
+typedef struct vidinfo {
+	ushort	vl_col;		/* 行点数 */
+	ushort	vl_row;		/* 行数 */
+	ushort	vl_width;	/* 显示宽度 */
+	ushort	vl_height;	/* 显示高度 */
+
+	u_char	vl_bpix;	
+} vidinfo_t;
+//zxd <--
 
 #else
 
@@ -318,7 +331,8 @@ void lcd_show_board_info(void);
 #define LCD_COLOR4	2
 #define LCD_COLOR8	3
 #define LCD_COLOR16	4
-
+//zxd 
+#define LCD_BPP LCD_COLOR16
 /*----------------------------------------------------------------------*/
 #if defined(CONFIG_LCD_INFO_BELOW_LOGO)
 # define LCD_INFO_X		0

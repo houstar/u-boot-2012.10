@@ -36,6 +36,13 @@
  * High Level Configuration Options
  * (easy to change)
  */
+/*
+ * LCD support
+ */
+#define CONFIG_LCD
+#ifdef CONFIG_LCD
+#define CONFIG_LCD_LOGO
+#endif
 
 /*
  * MMC Support
