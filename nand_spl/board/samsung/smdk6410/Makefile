@@ -38,7 +38,7 @@ AFLAGS	+= -DCONFIG_NAND_SPL
 CFLAGS	+= -DCONFIG_NAND_SPL -ffunction-sections
 
 SOBJS	= start.o cpu_init.o lowlevel_init.o
-COBJS	= nand_boot.o nand_ecc.o s3c64xx.o smdk6410_nand_spl.o nand_base.o
+COBJS	= nand_boot.o nand_ecc.o s3c64xx.o smdk6410_nand_spl.o nand_base.o movi_boot.o 
 
 SRCS	:= $(addprefix $(obj),$(SOBJS:.o=.S) $(COBJS:.o=.c))
 OBJS	:= $(addprefix $(obj),$(SOBJS) $(COBJS))
@@ -79,12 +79,13 @@ $(obj)cpu_init.S:
 $(obj)lowlevel_init.S:
 	@rm -f $@
 	@ln -s $(TOPDIR)/board/samsung/smdk6410/lowlevel_init.S $@
-
 # from nand_spl directory
 $(obj)nand_boot.c:
 	@rm -f $@
 	@ln -s $(TOPDIR)/nand_spl/nand_boot.c $@
-
+$(obj)movi_boot.c:
+	@rm -f $@
+	@ln -s $(TOPDIR)/nand_spl/movi_boot.c $@
 # from drivers/mtd/nand directory
 $(obj)nand_ecc.c:
 	@rm -f $@

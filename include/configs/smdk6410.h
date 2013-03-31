@@ -305,8 +305,9 @@
 #define CONFIG_NAND_S3C64XX
 /* Unimplemented or unsupported. See comment above.
 #define CONFIG_ONENAND
-#define CONFIG_MOVINAND
 */
+#define CONFIG_MOVINAND
+
 
 /* Settings as above boot configuration */
 #define CONFIG_ENV_IS_IN_NAND

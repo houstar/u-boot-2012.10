@@ -52,37 +52,37 @@
 .globl _start
 _start: b	reset
 #ifndef CONFIG_NAND_SPL
-	ldr	pc, _undefined_instruction
-	ldr	pc, _software_interrupt
-	ldr	pc, _prefetch_abort
-	ldr	pc, _data_abort
-	ldr	pc, _not_used
-	ldr	pc, _irq
-	ldr	pc, _fiq
+ldr	pc, _undefined_instruction
+ldr	pc, _software_interrupt
+ldr	pc, _prefetch_abort
+ldr	pc, _data_abort
+ldr	pc, _not_used
+ldr	pc, _irq
+ldr	pc, _fiq
 
 _undefined_instruction:
-	.word undefined_instruction
+.word undefined_instruction
 _software_interrupt:
-	.word software_interrupt
+.word software_interrupt
 _prefetch_abort:
-	.word prefetch_abort
+.word prefetch_abort
 _data_abort:
-	.word data_abort
+.word data_abort
 _not_used:
-	.word not_used
+.word not_used
 _irq:
-	.word irq
+.word irq
 _fiq:
-	.word fiq
+.word fiq
 _pad:
-	.word 0x12345678 /* now 16*4=64 */
+.word 0x12345678 /* now 16*4=64 */
 #else
-	. = _start + 64
+. = _start + 64
 #endif
 
 .global _end_vect
 _end_vect:
-	.balignl 16,0xdeadbeef
+.balignl 16,0xdeadbeef
 /*
  *************************************************************************
  *
@@ -98,7 +98,7 @@ _end_vect:
 
 .globl _TEXT_BASE
 _TEXT_BASE:
-	.word	CONFIG_SYS_TEXT_BASE
+.word	CONFIG_SYS_TEXT_BASE
 
 /*
  * Below variable is very important because we use MMU in U-Boot.
@@ -106,7 +106,7 @@ _TEXT_BASE:
  * by scsuh.
  */
 _TEXT_PHY_BASE:
-	.word	CONFIG_SYS_PHY_UBOOT_BASE
+.word	CONFIG_SYS_PHY_UBOOT_BASE
 
 /*
  * These are defined in the board-specific linker script.
@@ -117,33 +117,33 @@ _TEXT_PHY_BASE:
 
 .globl _bss_start_ofs
 _bss_start_ofs:
-	.word __bss_start - _start
+.word __bss_start - _start
 
 .globl _bss_end_ofs
 _bss_end_ofs:
-	.word __bss_end__ - _start
+.word __bss_end__ - _start
 
 .globl _end_ofs
 _end_ofs:
-	.word _end - _start
+.word _end - _start
 
 /* IRQ stack memory (calculated at run-time) + 8 bytes */
 .globl IRQ_STACK_START_IN
 IRQ_STACK_START_IN:
-	.word	0x0badc0de
+.word	0x0badc0de
 
 /*
  * the actual reset code
  */
 
 reset:
-	/*
-	 * set the cpu to SVC32 mode
-	 */
-	mrs	r0, cpsr
-	bic	r0, r0, #0x3f
-	orr	r0, r0, #0xd3
-	msr	cpsr, r0
+/*
+ * set the cpu to SVC32 mode
+ */
+mrs	r0, cpsr
+bic	r0, r0, #0x3f
+orr	r0, r0, #0xd3
+msr	cpsr, r0
 
 /*
  *************************************************************************
@@ -155,45 +155,45 @@ reset:
  *
  *************************************************************************
  */
-	/*
-	 * we do sys-critical inits only at reboot,
-	 * not when booting from ram!
-	 */
+/*
+ * we do sys-critical inits only at reboot,
+ * not when booting from ram!
+ */
 cpu_init_crit:
-	/*
-	 * When booting from NAND - it has definitely been a reset, so, no need
-	 * to flush caches and disable the MMU
-	 */
+/*
+ * When booting from NAND - it has definitely been a reset, so, no need
+ * to flush caches and disable the MMU
+ */
 #ifndef CONFIG_NAND_SPL
-	/*
-	 * flush v4 I/D caches
-	 */
-	mov	r0, #0
-	mcr	p15, 0, r0, c7, c7, 0	/* flush v3/v4 cache */
-	mcr	p15, 0, r0, c8, c7, 0	/* flush v4 TLB */
+/*
+ * flush v4 I/D caches
+ */
+mov	r0, #0
+mcr	p15, 0, r0, c7, c7, 0	/* flush v3/v4 cache */
+mcr	p15, 0, r0, c8, c7, 0	/* flush v4 TLB */
 
-	/*
-	 * disable MMU stuff and caches
-	 */
+/*
+ * disable MMU stuff and caches
+ */
 	mrc	p15, 0, r0, c1, c0, 0
 	bic	r0, r0, #0x00002300	@ clear bits 13, 9:8 (--V- --RS)
-	bic	r0, r0, #0x00000087	@ clear bits 7, 2:0 (B--- -CAM)
+bic	r0, r0, #0x00000087	@ clear bits 7, 2:0 (B--- -CAM)
 	orr	r0, r0, #0x00000002	@ set bit 2 (A) Align
 	orr	r0, r0, #0x00001000	@ set bit 12 (I) I-Cache
 
 	/* Prepare to disable the MMU */
 	adr	r2, mmu_disable_phys
-	sub	r2, r2, #(CONFIG_SYS_PHY_UBOOT_BASE - CONFIG_SYS_TEXT_BASE)
+sub	r2, r2, #(CONFIG_SYS_PHY_UBOOT_BASE - CONFIG_SYS_TEXT_BASE)
 	b	mmu_disable
 
 	.align 5
 	/* Run in a single cache-line */
-mmu_disable:
+	mmu_disable:
 	mcr	p15, 0, r0, c1, c0, 0
 	nop
 	nop
 	mov	pc, r2
-mmu_disable_phys:
+	mmu_disable_phys:
 
 #ifdef CONFIG_DISABLE_TCM
 	/*
@@ -208,7 +208,7 @@ mmu_disable_phys:
 	mcrne	p15, 0, r1, c9, c1, 1	/* Disable Instruction TCM if present*/
 	tst	r0, r2, LSL #16
 	mcrne	p15, 0, r1, c9, c1, 0	/* Disable Data TCM if present*/
-skip_tcmdisable:
+	skip_tcmdisable:
 #endif
 #endif
 
@@ -223,31 +223,33 @@ skip_tcmdisable:
 	 * Go setup Memory and board specific bits prior to relocation.
 	 */
 	bl	lowlevel_init		/* go setup pll,mux,memory */
+#ifdef CONFIG_NAND_SPL
 
-/* Set stackpointer in internal RAM to call board_init_f */
-call_board_init_f:
-	ldr	sp, =(CONFIG_SYS_INIT_SP_ADDR)
+#endif
+#ifndef CONFIG_NAND_SPL
+	/* Set stackpointer in internal RAM to call board_init_f */
+	call_board_init_f:
+ldr	sp, =(CONFIG_SYS_INIT_SP_ADDR)
 	bic	sp, sp, #7 /* 8-byte alignment for ABI compliance */
 	ldr	r0,=0x00000000
 	bl	board_init_f
 
-/*------------------------------------------------------------------------------*/
+	/*------------------------------------------------------------------------------*/
 
-/*
- * void relocate_code (addr_sp, gd, addr_moni)
- *
- * This "function" does not return, instead it continues in RAM
- * after relocating the monitor code.
- *
- */
+	/*
+	 * void relocate_code (addr_sp, gd, addr_moni)
+	 *
+	 * This "function" does not return, instead it continues in RAM
+	 * after relocating the monitor code.
+	 *
+	 */
 	.globl	relocate_code
-relocate_code:
+	relocate_code:
 	mov	r4, r0	/* save addr_sp */
 	mov	r5, r1	/* save addr of gd */
 	mov	r6, r2	/* save addr of destination */
-
 	/* Set up the stack						    */
-stack_setup:
+	stack_setup:
 	mov	sp, r4
 
 	adr	r0, _start
@@ -258,7 +260,7 @@ stack_setup:
 	ldr	r3, _bss_start_ofs
 	add	r2, r0, r3		/* r2 <- source end address	    */
 
-copy_loop:
+	copy_loop:
 	ldmia	r0!, {r9-r10}		/* copy from source address [r0]    */
 	stmia	r1!, {r9-r10}		/* copy to   target address [r1]    */
 	cmp	r0, r2			/* until source end address [r2]    */
@@ -276,7 +278,7 @@ copy_loop:
 	add	r2, r2, r0		/* r2 <- rel dyn start in FLASH */
 	ldr	r3, _rel_dyn_end_ofs	/* r3 <- rel dyn end ofs */
 	add	r3, r3, r0		/* r3 <- rel dyn end in FLASH */
-fixloop:
+	fixloop:
 	ldr	r0, [r2]		/* r0 <- location to fix up, IN FLASH! */
 	add	r0, r0, r9		/* r0 <- location to fix up in RAM */
 	ldr	r1, [r2, #4]
@@ -287,18 +289,18 @@ fixloop:
 	beq	fixabs
 	/* ignore unknown type of fixup */
 	b	fixnext
-fixabs:
+	fixabs:
 	/* absolute fix: set location to (offset) symbol value */
 	mov	r1, r1, LSR #4		/* r1 <- symbol index in .dynsym */
 	add	r1, r10, r1		/* r1 <- address of symbol in table */
 	ldr	r1, [r1, #4]		/* r1 <- symbol value */
 	add	r1, r1, r9		/* r1 <- relocated sym addr */
 	b	fixnext
-fixrel:
+	fixrel:
 	/* relative fix: increase location by offset */
 	ldr	r1, [r0]
 	add	r1, r1, r9
-fixnext:
+	fixnext:
 	str	r1, [r0]
 	add	r2, r2, #8		/* each rel.dyn entry is 8 bytes */
 	cmp	r2, r3
@@ -306,7 +308,7 @@ fixnext:
 #endif
 
 #ifdef CONFIG_ENABLE_MMU
-enable_mmu:
+	enable_mmu:
 	/* enable domain access */
 	ldr	r5, =0x0000ffff
 	mcr	p15, 0, r5, c3, c0, 0	/* load domain access register */
@@ -334,33 +336,33 @@ enable_mmu:
 
 	.align 5
 	/* Run in a single cache-line */
-mmu_enable:
+	mmu_enable:
 
 	mcr	p15, 0, r0, c1, c0, 0
 	nop
 	nop
 	mov	pc, r2
-skip_hw_init:
+	skip_hw_init:
 #endif
 
 clear_bss:
 #ifndef CONFIG_SPL_BUILD
-	ldr	r0, _bss_start_ofs
-	ldr	r1, _bss_end_ofs
-	mov	r4, r6			/* reloc addr */
-	add	r0, r0, r4
-	add	r1, r1, r4
-	mov	r2, #0x00000000		/* clear			    */
+ldr	r0, _bss_start_ofs
+ldr	r1, _bss_end_ofs
+mov	r4, r6			/* reloc addr */
+add	r0, r0, r4
+add	r1, r1, r4
+mov	r2, #0x00000000		/* clear			    */
 
 clbss_l:cmp	r0, r1			/* clear loop... */
-	bhs	clbss_e			/* if reached end of bss, exit */
-	str	r2, [r0]
-	add	r0, r0, #4
-	b	clbss_l
+bhs	clbss_e			/* if reached end of bss, exit */
+str	r2, [r0]
+add	r0, r0, #4
+b	clbss_l
 clbss_e:
-#ifndef CONFIG_NAND_SPL
-	bl coloured_LED_init
-	bl red_led_on
+//#ifndef CONFIG_NAND_SPL
+bl coloured_LED_init
+bl red_led_on
 #endif
 #endif
 
@@ -369,47 +371,75 @@ clbss_e:
  * initialization, now running from RAM.
  */
 #ifdef CONFIG_NAND_SPL
-	ldr     pc, _nand_boot
+	#define MEM_CFG_STAT 0x7e00f12c
+	ldr	r1, =MEM_CFG_STAT	 /* address of reg MEM_CFG_STAT*/
+	ldr	r0, [r1]
+	mov r1, #0x60	
+	and	r1, r0, r1	 /*r1 = MEM_CFG_STAT & CFG_BOOT_LOC */
 
-_nand_boot: .word nand_boot
-#else
+	cmp	r1, #0x60	 /*Internal ROM*/
+	beq	boot_from_irom
+
+	cmp	r1, #0x00	 /*Stepping Stone area in NFCON*/
+	beq	boot_from_nand
+
+	b	reset
+
+	boot_from_irom:	
+		ldr sp, _TEXT_PHY_BASE
+		bl	movi_bl2_copy
+		b	after_copy	
+		after_copy:
+			ldr pc,_TEXT_PHY_BASE
+	boot_from_nand: 
+		ldr	sp, =(CONFIG_SYS_INIT_SP_ADDR)
+		bic	sp, sp, #7 /* 8-byte alignment for ABI compliance */
+		ldr r0,_nand_boot
+		mov pc, r0
+	_nand_boot: .word nand_boot
+#else  
+	/* LED test */
+	ldr	r3, =0x7f008000 //ELFIN_GPIO_BASE
+	ldr	r4, =0x002b
+	str	r4, [r3, #0x824]
+
 	ldr	r0, _board_init_r_ofs
 	adr	r1, _start
 	add	lr, r0, r1
-	add     lr, lr, r9
+	add lr, lr, r9
 	/* setup parameters for board_init_r */
 	mov	r0, r5		/* gd_t */
 	mov	r1, r6		/* dest_addr */
 	/* jump to it ... */
 	mov	pc, lr
 
-_board_init_r_ofs:
+	_board_init_r_ofs:
 	.word board_init_r - _start
 #endif
 
-_rel_dyn_start_ofs:
+	_rel_dyn_start_ofs:
 	.word __rel_dyn_start - _start
-_rel_dyn_end_ofs:
+	_rel_dyn_end_ofs:
 	.word __rel_dyn_end - _start
-_dynsym_start_ofs:
+	_dynsym_start_ofs:
 	.word __dynsym_start - _start
 
 #ifdef CONFIG_ENABLE_MMU
-_mmu_table_base:
+	_mmu_table_base:
 	.word mmu_table
 #endif
 
 #ifndef CONFIG_NAND_SPL
-/*
- * we assume that cache operation is done before. (eg. cleanup_before_linux())
- * actually, we don't need to do anything about cache if not use d-cache in
- * U-Boot. So, in this function we clean only MMU. by scsuh
- *
- * void	theLastJump(void *kernel, int arch_num, uint boot_params);
- */
+	/*
+	 * we assume that cache operation is done before. (eg. cleanup_before_linux())
+	 * actually, we don't need to do anything about cache if not use d-cache in
+	 * U-Boot. So, in this function we clean only MMU. by scsuh
+	 *
+	 * void	theLastJump(void *kernel, int arch_num, uint boot_params);
+	 */
 #ifdef CONFIG_ENABLE_MMU
 	.globl theLastJump
-theLastJump:
+	theLastJump:
 	mov	r9, r0
 	ldr	r3, =0xfff00000
 	ldr	r4, _TEXT_PHY_BASE
@@ -417,7 +447,7 @@ theLastJump:
 	bic	r5, r5, r3
 	orr	r5, r5, r4
 	mov	pc, r5
-phy_last_jump:
+	phy_last_jump:
 	/*
 	 * disable MMU stuff
 	 */
@@ -435,16 +465,16 @@ phy_last_jump:
 #endif
 
 
-/*
- *************************************************************************
- *
- * Interrupt handling
- *
- *************************************************************************
- */
-@
-@ IRQ stack frame.
-@
+	/*
+	 *************************************************************************
+	 *
+	 * Interrupt handling
+	 *
+	 *************************************************************************
+	 */
+	@
+	@ IRQ stack frame.
+	@
 #define S_FRAME_SIZE	72
 
 #define S_OLD_R0	68
@@ -470,9 +500,9 @@ phy_last_jump:
 #define MODE_SVC 0x13
 #define I_BIT	 0x80
 
-/*
- * use bad_save_user_regs for abort/prefetch/undef/swi ...
- */
+	/*
+	 * use bad_save_user_regs for abort/prefetch/undef/swi ...
+	 */
 
 	.macro	bad_save_user_regs
 	/* carve out a frame on current user stack */
@@ -533,47 +563,47 @@ phy_last_jump:
 	add	r13, r13, #4
 	.endm
 
-/*
- * exception handlers
- */
+	/*
+	 * exception handlers
+	 */
 	.align	5
-undefined_instruction:
+	undefined_instruction:
 	get_bad_stack
 	bad_save_user_regs
 	bl	do_undefined_instruction
 
 	.align	5
-software_interrupt:
+	software_interrupt:
 	get_bad_stack_swi
 	bad_save_user_regs
 	bl	do_software_interrupt
 
 	.align	5
-prefetch_abort:
+	prefetch_abort:
 	get_bad_stack
 	bad_save_user_regs
 	bl	do_prefetch_abort
 
 	.align	5
-data_abort:
+	data_abort:
 	get_bad_stack
 	bad_save_user_regs
 	bl	do_data_abort
 
 	.align	5
-not_used:
+	not_used:
 	get_bad_stack
 	bad_save_user_regs
 	bl	do_not_used
 
 	.align	5
-irq:
+	irq:
 	get_bad_stack
 	bad_save_user_regs
 	bl	do_irq
 
 	.align	5
-fiq:
+	fiq:
 	get_bad_stack
 	bad_save_user_regs
 	bl	do_fiq
