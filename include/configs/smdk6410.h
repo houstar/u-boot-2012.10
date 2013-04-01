@@ -104,7 +104,7 @@
 #define CONFIG_DM9000_BASE (0x18000300) /*XM0CSN1*/
 #define DM9000_IO (CONFIG_DM9000_BASE)
 #define DM9000_DATA (CONFIG_DM9000_BASE+0x4) /*ADDR2*/
-#define CONFIG_DM9000_DEBUG 1
+//#define CONFIG_DM9000_DEBUG 1
 #define CONFIG_DM9000_USE_16BIT 1
 
 #define CONFIG_ETHADDR			08:08:10:12:10:27
@@ -217,7 +217,7 @@
 #define CONFIG_SYS_FLASH_ERASE_TOUT	(5 * CONFIG_SYS_HZ) /* Timeout for Flash Erase	*/
 #define CONFIG_SYS_FLASH_WRITE_TOUT	(5 * CONFIG_SYS_HZ) /* Timeout for Flash Write	*/
 
-#define CONFIG_ENV_SIZE		0x4000	/* Total Size of Environment Sector */
+#define CONFIG_ENV_SIZE		0x80000	/* Total Size of Environment Sector */
 
 /*
  * SMDK6400 board specific data
@@ -246,7 +246,7 @@
 /* NAND U-Boot load and start address */
 #define CONFIG_SYS_UBOOT_BASE		(CONFIG_SYS_MAPPED_RAM_BASE + 0x07e00000)
 
-#define CONFIG_ENV_OFFSET		0x0040000
+#define CONFIG_ENV_OFFSET		0x0080000
 
 /* NAND configuration */
 #define CONFIG_SYS_MAX_NAND_DEVICE	1
